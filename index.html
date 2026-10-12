@@ -1050,7 +1050,9 @@ body .field.fld-outside .field-box > .field-affix:has(.fa-ico){
   padding-top:10px;padding-bottom:10px}
 
 body.desktop .screen-body > .h-sub:first-child,
-body.desktop .screen-body > .q-block:first-child > .h-sub:first-child{
+body.desktop .screen-body > .q-block:first-child > .h-sub:first-child,
+body.desktop .q-block > .h-sub,
+body.desktop .rv-head > .h-sub{   /* section titles: with a line of text, or beside an Edit link */
   font-size:24px;line-height:32px;letter-spacing:-.36px}
 body.desktop .body-text,
 body.desktop .q-hint,
@@ -1646,10 +1648,12 @@ var Proto = (function () {
       c.insertAdjacentHTML('afterend', '<input type="hidden" name="' + c.getAttribute('data-bic') + '">');
       if (syn) {
         c.setAttribute('data-ac-syn', '');
-        c.setAttribute('placeholder', 'Business category');
+        /* field label (the combobox builds it from placeholder) and hint:
+           JifiVoice review 11 Oct. Check your details keeps "Business category". */
+        c.setAttribute('placeholder', 'What does your business do?');
         c.setAttribute('data-ac-empty', 'No categories found. Try another word.');
         var sh = f && f.querySelector('.q-hint');
-        if (sh) sh.textContent = 'Enter at least 3 characters to search, and select closest match.';
+        if (sh) sh.textContent = 'Search starts at 3 characters. Select the closest match.';
         var se = f && f.querySelector('.err:not([data-why])');
         if (se) se.textContent = se.textContent.replace('business sector', 'business category');
         return;
@@ -4320,7 +4324,15 @@ window.ProtoFields = (function () {
     /* Combined search text: the text itself, plus hyphen-free and joined-word
        forms, so "takeaway" finds "Take-away" and "Take away" (built once) */
     var synCache = null;
+    /* punctuation (11 Oct): apostrophes are dropped and other punctuation
+       counts as a space, in the data and the query alike ("men's" = "mens",
+       "dog, grooming" = "dog grooming"); "&" and hyphens are kept ("B&B";
+       hyphens have their own rule below) */
+    function synNorm(t) {
+      return String(t).replace(/['\u2018\u2019`]/g, '').replace(/[^A-Za-z0-9&\s-]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
     function synText(t) {
+      t = synNorm(t);
       var w = t.split(/\s+/), pairs = [];
       for (var i = 0; i < w.length - 1; i++) pairs.push(w[i] + w[i + 1]);
       return t + ' | ' + t.replace(/-/g, '') + ' | ' + pairs.join(' ');
@@ -4341,7 +4353,7 @@ window.ProtoFields = (function () {
       var C = synCache;
       /* query: hyphens dropped ("take-away" = "takeaway"); "and", "&", "of",
          "the" ignored unless they are all that was typed */
-      var all = q.replace(/-/g, '').split(/\s+/).filter(Boolean);
+      var all = synNorm(q).toLowerCase().replace(/-/g, '').split(/\s+/).filter(Boolean);
       var words = all.filter(function (w) { return ['and', '&', 'of', 'the'].indexOf(w) < 0; });
       if (!words.length) words = all;
       var rx = function (w) {
@@ -4361,7 +4373,7 @@ window.ProtoFields = (function () {
       };
       var setE = exact.map(reach), setS = stems.map(function (re) { return re ? reach(re) : {}; });
       var phrase = words.join(' ');
-      var bare = function (t) { return t.toLowerCase().replace(/\([^)]*\)/g, '').replace(/[^a-z0-9& ]+/g, ' ').replace(/\s+/g, ' ').trim(); };
+      var bare = function (t) { return t.toLowerCase().replace(/['\u2018\u2019`]/g, '').replace(/\([^)]*\)/g, '').replace(/[^a-z0-9& ]+/g, ' ').replace(/\s+/g, ' ').trim(); };
       var SVC = /\((manufacture|wholesale|commission agent|commission trade)\)|\b(exporter|importer)\b/i;
       /* candidates: every code reached by any word; full = all words matched */
       var cand = {};
@@ -4384,7 +4396,7 @@ window.ProtoFields = (function () {
            businesses mostly type a trade or service) */
         var score = 0, nm = synText(n);
         if (hit(nm)) score += 40;
-        if (n.toLowerCase().indexOf(phrase) === 0) score += 20;
+        if (synNorm(n).toLowerCase().replace(/-/g, '').indexOf(phrase) === 0) score += 20;
         var subHits = (C.subsOf[c] || []).filter(function (i) { return hit(C.s[i]); });
         var bq = bare(phrase);
         if (subHits.some(function (i) { var x = bare(subs[i]); return x === bq || x === bq + 's' || x.replace(/s$/, '') === bq; })) score += 60;
