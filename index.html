@@ -775,8 +775,8 @@ html:not([data-product-change]) [data-show-when-product-change]{display:none!imp
 
 :root{
   --ds-brand:#006de3;
-  --ds-brand-hover:#0064d1;
-  --ds-brand-pressed:#0057b8;
+  --ds-btn-hover-shade:inset 0 4px 160px rgba(0,0,0,.1);
+  --ds-btn-disabled:#e2e2e2;  --ds-btn-disabled-ink:#8E8E8E;
   --ds-brand-tint:#e7f0fb;
   --ds-text:#272727;  --ds-text-secondary:#515151;  --ds-text-inverse:#ffffff;
   --ds-label-field:#272727;  --ds-surface:#ffffff;
@@ -827,24 +827,30 @@ body.desktop .tel-link:focus-visible{outline:none}
 .link-btn:hover{opacity:.85}
 .link-btn:focus-visible{outline:2px solid var(--ds-focus-button);outline-offset:2px;border-radius:2px}
 
+/* Blueprint Button 4991:80320 — Default / Hover / Disabled. Hover is Figma's
+   inner shade over the resting fill (no separate pressed state: press = hover);
+   pointer-hover only, so a tapped button doesn't stay shaded on touch. */
 .btn-primary{width:100%;min-height:48px;border:none;cursor:pointer;
   border-radius:var(--ds-radius-pill);background:var(--ds-brand);color:var(--ds-text-inverse);
   font:500 16px/24px var(--ds-font);padding:12px 32px;
-  transition:background .14s cubic-bezier(.32,.72,0,1)}
-.btn-primary:hover{background:var(--ds-brand-hover)}
-.btn-primary:active{background:var(--ds-brand-pressed)}
+  transition:box-shadow .14s cubic-bezier(.32,.72,0,1)}
+.btn-primary:active{box-shadow:var(--ds-btn-hover-shade)}
 .btn-primary:focus-visible{outline:2px solid var(--ds-focus-button);outline-offset:2px}
-.btn-primary:disabled{opacity:.3;pointer-events:none}
+.btn-primary:disabled{background:var(--ds-btn-disabled);color:var(--ds-btn-disabled-ink);
+  box-shadow:none;cursor:default;pointer-events:none}
 
 .btn-secondary{width:100%;min-height:48px;cursor:pointer;
   border-radius:var(--ds-radius-pill);background:var(--ds-surface);color:var(--ds-brand);
   border:2px solid var(--ds-brand);font:500 16px/24px var(--ds-font);padding:10px 30px;
-  transition:background .14s cubic-bezier(.32,.72,0,1),color .14s cubic-bezier(.32,.72,0,1)}
-.btn-secondary:hover{background:var(--ds-brand);color:var(--ds-text-inverse)}
-.btn-secondary:active{background:var(--ds-brand-pressed);border-color:var(--ds-brand-pressed);
-  color:var(--ds-text-inverse)}
+  transition:box-shadow .14s cubic-bezier(.32,.72,0,1)}
+.btn-secondary:active{box-shadow:var(--ds-btn-hover-shade)}
 .btn-secondary:focus-visible{outline:2px solid var(--ds-focus-button);outline-offset:2px}
-.btn-secondary:disabled{opacity:.3;pointer-events:none}
+.btn-secondary:disabled{background:var(--ds-surface);border-color:var(--ds-btn-disabled);
+  color:var(--ds-btn-disabled-ink);box-shadow:none;cursor:default;pointer-events:none}
+
+@media (hover:hover){
+  .btn-primary:hover,.btn-secondary:hover{box-shadow:var(--ds-btn-hover-shade)}
+}
 
 .alert{display:flex;gap:8px;background:var(--ds-brand-tint);border:2px solid var(--ds-brand);
   border-radius:var(--ds-radius-card);padding:14px}
@@ -970,13 +976,15 @@ body .flow-caption{font:500 16px/22px var(--ds-font);color:var(--ds-text);
 body .screen{background:var(--ds-background)}
 body .screen-body{padding:24px 20px 40px;gap:24px;background:var(--ds-background)}
 
+/* Desktop heading step tracker 32306:250351: band 80 (no rule), hero 24 /
+   title 48/58 / 24, bar, 4, caption 16/24, 24 → 174 */
 body.desktop .flow-head .fh-bar{
-  padding:24px clamp(24px, calc((100% - 816px) / 2), 102px);
-  border-bottom:1px solid var(--ds-stroke-light)}
+  padding:24px clamp(24px, calc((100% - 816px) / 2), 102px)}
 body.desktop .flow-head[data-hero] .fh-hero{
-  padding:32px max(24px, calc((100% - 816px) / 2)) 0}
+  padding:24px max(24px, calc((100% - 816px) / 2)) 0}
+body.desktop .fh-title{font:700 48px/58px var(--ds-font);letter-spacing:-1.44px;margin:0 0 24px}
 body.desktop .flow-bar{width:auto;margin:0 max(24px, calc((100% - 816px) / 2))}
-body.desktop .flow-caption{padding:4px max(24px, calc((100% - 816px) / 2)) 12px}
+body.desktop .flow-caption{line-height:24px;padding:4px max(24px, calc((100% - 816px) / 2)) 24px}
 body.desktop .screen-body{padding:32px max(24px, calc((100% - 816px) / 2)) 48px;
   gap:var(--ds-rhythm,32px)}
 body.desktop .screen-body > .field + .field:has(+ .field),
